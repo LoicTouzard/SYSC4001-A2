@@ -8,14 +8,20 @@ typedef enum PROCESS_STATE
 	UNDEFINED, NEW, READY, RUNNING, WAITING, TERMINATED
 } PROCESS_STATE;
 
+char* stateToStr(PROCESS_STATE);
+
 typedef struct PCB{
-	int pid;
-	int arrivalTime;
-	int totalCPUTime;
-	int remainingCPUTime;
-	int IOFrequency;
-	int IODuration;
-	PROCESS_STATE state;
+	int pid;							// pid, from input
+	int arrivalTime;					// arrival time in system, from input
+	int totalCPUTime;					// total CPU Time required for the task, from input
+	int totalCPUTimeUsed;				// total CPU time used already
+	int remainingCPUTime;				// remaining CPU Time before preemption
+	int IOFrequency;					// IO frequency, from input
+	int IODuration;						// IO duration, from input
+	int remainingBeforeIORequestTime;	// Remaining time before the next IO request
+	int remainingIODuration;			// Time remaining with IO in WAITING state
+	int waitTime;						// time spent in the ready queue
+	PROCESS_STATE state;				// process state
 } PCB;
 
 PCB* PCBCreate(int pid,

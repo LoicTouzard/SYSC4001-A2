@@ -4,6 +4,16 @@
 #include "PCB.h"
 
 
+char* stateToStr(PROCESS_STATE state)
+{
+	return (state==NEW?"NEW":
+		(state==READY?"READY":
+			(state==RUNNING?"RUNNING":
+				(state==WAITING?"WAITING":
+					(state==TERMINATED?"TERMINATED":"UNKNOWN"
+	)))));
+}
+
 // PCB IMPLEMENTATION
 
 PCB* PCBCreate(int pid,
@@ -14,11 +24,15 @@ PCB* PCBCreate(int pid,
 {
 	PCB* pcb = (PCB*)malloc(sizeof(PCB));
 	pcb->pid = pid;
-	pcb->arrivalTime = arrivalTime;
-	pcb->totalCPUTime = totalCPUTime;
+	pcb->arrivalTime = (arrivalTime < 0)?0:arrivalTime;
+	pcb->totalCPUTime = (totalCPUTime < 0)?0:totalCPUTime;
+	pcb->totalCPUTimeUsed = 0;
 	pcb->remainingCPUTime = 0;
-	pcb->IOFrequency = IOFrequency;
-	pcb->IODuration = IODuration;
+	pcb->IOFrequency = (IOFrequency < 0)?0:IOFrequency;
+	pcb->IODuration = (IODuration < 0)?0:IODuration;
+	pcb->remainingBeforeIORequestTime = (IOFrequency <= 0)?-1:IOFrequency;// IOFrequency to 0 results in no IO interruption
+	pcb->remainingIODuration = 0;
+	pcb->waitTime = 0;
 	pcb->state = UNDEFINED;
 	return pcb;
 }
@@ -33,13 +47,7 @@ void PCBPrint(PCB* pcb)
 {
 
 	printf("Process %d : arrivalTime %d | totalCPUTime %d | IOFrequency %d | IODuration %d | state %s\n",
-		pcb->pid, pcb->arrivalTime, pcb->totalCPUTime, pcb->IOFrequency, pcb->IODuration,
-			(pcb->state==NEW?"NEW":
-				(pcb->state==READY?"READY":
-					(pcb->state==RUNNING?"RUNNING":
-						(pcb->state==WAITING?"WAITING":
-							(pcb->state==TERMINATED?"TERMINATED":"UNKNOWN"
-			))))));
+		pcb->pid, pcb->arrivalTime, pcb->totalCPUTime, pcb->IOFrequency, pcb->IODuration, stateToStr(pcb->state));
 }
 
 int PCBCmp(const void * a, const void * b)
