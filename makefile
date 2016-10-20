@@ -22,7 +22,7 @@ RM=rm
 RMFlags=-f
 
 Compilator=@gcc
-CompilationsOptions=-Wall -pedantic
+CompilationsOptions=-Wall -pedantic -std=c11
 Linker=@gcc
 LinkerOptions=
 
