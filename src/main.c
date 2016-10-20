@@ -19,6 +19,10 @@ int main(int argc, char* argv[])
 	int nbProcesses = readProcesses(&processes);
 	printf("%d Process%s created\n", nbProcesses, (nbProcesses>1?"es":""));
 
+
+	// execution goes here
+
+
 	for (int i = 0; i < nbProcesses; ++i)
 	{
 		printPCB(processes[i]);
