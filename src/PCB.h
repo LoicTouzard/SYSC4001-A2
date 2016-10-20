@@ -5,28 +5,30 @@
 
 typedef enum PROCESS_STATE
 {
-	NEW, READY, RUNNING, WAITING, TERMINATED
+	UNDEFINED, NEW, READY, RUNNING, WAITING, TERMINATED
 } PROCESS_STATE;
 
 typedef struct PCB{
 	int pid;
 	int arrivalTime;
 	int totalCPUTime;
+	int remainingCPUTime;
 	int IOFrequency;
 	int IODuration;
 	PROCESS_STATE state;
 } PCB;
 
-PCB* createPCB(int pid,
+PCB* PCBCreate(int pid,
 	int arrivalTime,
 	int totalCPUTime,
 	int IOFrequency,
 	int IODuration);
 
-void deletePCB(PCB* pcb);
+void PCBDelete(PCB* pcb);
 
-void printPCB(PCB* pcb);
+void PCBPrint(PCB* pcb);
 
+int PCBCmp(const void * a, const void * b);
 
 // PCB QUEUE DECLARATION
 

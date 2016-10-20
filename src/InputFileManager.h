@@ -3,9 +3,9 @@
 
 #include "PCB.h"
 
-int openInputFile(const char* filename);
+int IFMOpen(const char* filename);
 
-int closeInputFile();
+int IFMClose();
 
-int readProcesses(PCB*** processes);
+int IFMReadProcesses(PCB*** processes);
 #endif // INPUTFILEMANAGER_H

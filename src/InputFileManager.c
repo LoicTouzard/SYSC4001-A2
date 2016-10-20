@@ -7,7 +7,7 @@
 
 static FILE* inputFile = NULL;
 
-int openInputFile(const char* filename)
+int IFMOpen(const char* filename)
 {
 	
 	inputFile = fopen(filename, "r");
@@ -19,7 +19,7 @@ int openInputFile(const char* filename)
 	return 0;
 }
 
-int closeInputFile()
+int IFMClose()
 {
 	int closed = fclose(inputFile);
 	inputFile = NULL;
@@ -46,12 +46,12 @@ PCB* lineToProcess(char* line)
 		// something was missing
 		return NULL;
 	}
-	PCB* process = createPCB(atoi(pid), atoi(arrivalTime), atoi(totalCPUTime), atoi(IOFrequency), atoi(IODuration));
+	PCB* process = PCBCreate(atoi(pid), atoi(arrivalTime), atoi(totalCPUTime), atoi(IOFrequency), atoi(IODuration));
 	
 	return process;
 }
 
-int readProcesses(PCB*** processes)
+int IFMReadProcesses(PCB*** processes)
 {
 	rewind(inputFile);
 	*processes = (PCB**)malloc(1*sizeof(PCB*));
