@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "PCB.h"
 
 
@@ -22,7 +23,9 @@ PCB* PCBCreate(int pid,
 	int IOFrequency,
 	int IODuration)
 {
+	// allocate a new PCB
 	PCB* pcb = (PCB*)malloc(sizeof(PCB));
+	// set all the value (checking if some value are < 0 too)
 	pcb->pid = pid;
 	pcb->arrivalTime = (arrivalTime < 0)?0:arrivalTime;
 	pcb->totalCPUTime = (totalCPUTime < 0)?0:totalCPUTime;
@@ -45,7 +48,7 @@ void PCBDelete(PCB* pcb)
 
 void PCBPrint(PCB* pcb)
 {
-
+	// only info from input (was for parsing debug)
 	printf("Process %d : arrivalTime %d | totalCPUTime %d | IOFrequency %d | IODuration %d | state %s\n",
 		pcb->pid, pcb->arrivalTime, pcb->totalCPUTime, pcb->IOFrequency, pcb->IODuration, stateToStr(pcb->state));
 }
@@ -72,6 +75,7 @@ PCBQueue* PCBQCreate(int max)
 
 void PCBQDelete(PCBQueue* queue)
 {
+	// free the inner array before freeing the queue
 	free(queue->PCBs);
 	free(queue);
 }
@@ -100,11 +104,11 @@ void PCBQInsert(PCBQueue* queue, PCB* data)
 {
 	if(!PCBQisFull(queue))
 	{	
-		if(queue->rear == queue->MAX-1)
+		if(queue->rear == queue->MAX-1) // index cycle if at the end
 		{
 			queue->rear = -1;            
 		}
-		queue->PCBs[++(queue->rear)] = data;
+		queue->PCBs[++(queue->rear)] = data; // insertion
 		queue->itemCount++;
 	}
 }
@@ -113,7 +117,7 @@ PCB* PCBQPop(PCBQueue* queue)
 {
 	PCB* data = queue->PCBs[queue->front++];
 
-	if(queue->front == queue->MAX)
+	if(queue->front == queue->MAX) // index cycle if at the end
 	{
 		queue->front = 0;
 	}

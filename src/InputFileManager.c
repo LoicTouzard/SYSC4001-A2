@@ -5,12 +5,12 @@
 #include "InputFileManager.h"
 #include "PCB.h"
 
-static FILE* inputFile = NULL;
+
+static FILE* inputFile = NULL; // input file pointer
 
 int IFMOpen(const char* filename)
 {
-	
-	inputFile = fopen(filename, "r");
+	inputFile = fopen(filename, "r"); // open the file and store the pointer
 	if(inputFile == NULL)
 	{
 		printf("Failed to open the input file : %s\n", filename);
@@ -21,7 +21,7 @@ int IFMOpen(const char* filename)
 
 int IFMClose()
 {
-	int closed = fclose(inputFile);
+	int closed = fclose(inputFile); // close the stored file pointer
 	inputFile = NULL;
 	if(closed != 0)
 	{
@@ -32,9 +32,10 @@ int IFMClose()
 }
 
 
+// Parse a read line into a process structure
 PCB* lineToProcess(char* line)
 {
-    // read the process caracteristics
+    // read all the process caracteristics
 	const char* pid = strtok (line,";");
 	const char* arrivalTime = strtok(NULL, ";");
 	const char* totalCPUTime = strtok(NULL, ";");
@@ -43,9 +44,10 @@ PCB* lineToProcess(char* line)
 
 	if(pid == NULL || arrivalTime == NULL || totalCPUTime == NULL ||IOFrequency == NULL || IODuration == NULL)
 	{
-		// something was missing
+		// something was missing, abort line
 		return NULL;
 	}
+	// dynamically create the process in memory
 	PCB* process = PCBCreate(atoi(pid), atoi(arrivalTime), atoi(totalCPUTime), atoi(IOFrequency), atoi(IODuration));
 	
 	return process;
@@ -53,19 +55,20 @@ PCB* lineToProcess(char* line)
 
 int IFMReadProcesses(PCB*** processes)
 {
-	rewind(inputFile);
-	*processes = (PCB**)malloc(1*sizeof(PCB*));
+	rewind(inputFile);// reset file pointer, just in case
+	*processes = (PCB**)malloc(1*sizeof(PCB*)); // create the PCB array beginning with size 1
 	int size = 0;
 
 	char line[128];
 
-    while (fgets(line, 128, inputFile))
+    while (fgets(line, 128, inputFile)) // while we can read a new line
     {
-        char* tmp = strdup(line); // duplicate allocates memory
-        PCB* process = lineToProcess(tmp);
+        char* tmp = strdup(line); // Note : strdup duplicate by allocating memory
+        PCB* process = lineToProcess(tmp); // try to allocate a process from this line
 
         if(process != NULL)
         {
+        	// add this new process to array, reallocating to adapt the size
         	size++;
     		*processes = (PCB**)realloc(*processes, size * sizeof(PCB*));
         	(*processes)[size-1] = process;
