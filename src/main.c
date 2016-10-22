@@ -27,25 +27,30 @@ int main(int argc, char* argv[])
 	int nbProcesses = IFMReadProcesses(&processes);
 	printf("%d Process%s created from input\n", nbProcesses, (nbProcesses>1?"es":""));
 
+	if(IFMClose() == -1) return EXIT_FAILURE;
+
 	// Sort PCBs by Arrival Time
 	qsort(processes, nbProcesses, sizeof(PCB*), PCBCmp);
 
 	printAllProcesses(processes, nbProcesses);
 
 
-	// execution goes here
-	// Init simulation
-	SimulatorInit(processes, nbProcesses, MODE_NONPREEMPTIVE);
+	// Simulation goes here
+	SimulatorSetProcesses(processes, nbProcesses);
+	SimulatorSetMode(MODE_NONPREEMPTIVE);
+	SimulatorSetAlgorithm(ALGORITHM_FCFS);
 	SimulatorRun();
+	/*
+	SimulatorReset();
+	SimulatorRun();
+	*/
 
+	// free processes data
 	for (int i = 0; i < nbProcesses; ++i)
 	{
 		PCBDelete(processes[i]);
 	}
 	free(processes);
-
-
-	if(IFMClose() == -1) return EXIT_FAILURE;
 
 	return EXIT_SUCCESS;
 }

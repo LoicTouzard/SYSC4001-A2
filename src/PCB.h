@@ -34,6 +34,9 @@ PCB* PCBCreate(int pid,
 	int IOFrequency,
 	int IODuration);
 
+// reset the caracteristics of the PCB due to simulation
+void PCBReset(PCB* pcb);
+
 // free a PCB struct
 void PCBDelete(PCB* pcb);
 

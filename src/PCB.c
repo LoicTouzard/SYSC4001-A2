@@ -25,7 +25,7 @@ PCB* PCBCreate(int pid,
 {
 	// allocate a new PCB
 	PCB* pcb = (PCB*)malloc(sizeof(PCB));
-	// set all the value (checking if some value are < 0 too)
+	// set all the values (checking if some value are < 0 too)
 	pcb->pid = pid;
 	pcb->arrivalTime = (arrivalTime < 0)?0:arrivalTime;
 	pcb->totalCPUTime = (totalCPUTime < 0)?0:totalCPUTime;
@@ -40,6 +40,16 @@ PCB* PCBCreate(int pid,
 	return pcb;
 }
 
+void PCBReset(PCB* pcb)
+{
+	// reset all the values modified in simulation
+	pcb->totalCPUTimeUsed = 0;
+	pcb->remainingCPUTime = 0;
+	pcb->remainingBeforeIORequestTime = (pcb->IOFrequency <= 0)?-1:pcb->IOFrequency;// IOFrequency to 0 results in no IO interruption
+	pcb->remainingIODuration = 0;
+	pcb->waitTime = 0;
+	pcb->state = UNDEFINED;
+}
 
 void PCBDelete(PCB* pcb)
 {
@@ -63,9 +73,15 @@ int PCBCmp(const void * a, const void * b)
 
 PCBQueue* PCBQCreate(int max)
 {
-	if(max <= 0) return NULL;
 	PCBQueue* pcbq = (PCBQueue*)malloc(sizeof(PCBQueue));
-	pcbq->PCBs = (PCB**)malloc(max * sizeof(PCB*));
+	if(max <= 0)
+	{
+		max = 0;
+	}
+	else
+	{
+		pcbq->PCBs = (PCB**)malloc(max * sizeof(PCB*));
+	}
 	pcbq->MAX = max;
 	pcbq->front = 0;
 	pcbq->rear = -1;
@@ -76,7 +92,7 @@ PCBQueue* PCBQCreate(int max)
 void PCBQDelete(PCBQueue* queue)
 {
 	// free the inner array before freeing the queue
-	free(queue->PCBs);
+	if(queue->MAX != 0) free(queue->PCBs);
 	free(queue);
 }
 

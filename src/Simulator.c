@@ -5,13 +5,26 @@
 #include "Simulator.h"
 #include "PCB.h"
 
+char* modeToStr(SCHELDULER_MODE mode)
+{
+	return (mode==MODE_PREEMPTIVE?"PREEMPTIVE":
+		(mode==MODE_NONPREEMPTIVE?"NONPREEMPTIVE":"UNKNOWN"
+	));
+}
+
+char* algorithmToStr(SCHELDULER_ALGORITHM algorithm)
+{
+	return (algorithm==ALGORITHM_FCFS?"FCFS":"UNKNOWN"
+	);
+}
 
 static PCB** processes = NULL;
 static int nbProcesses = 0;
 static PCBQueue* newQueue = NULL;
 static PCBQueue* readyQueue = NULL;
 static PCBQueue* terminatedQueue = NULL;
-static SCHELDULER_MODE MODE;
+static SCHELDULER_MODE MODE = MODE_NONPREEMPTIVE;
+static SCHELDULER_ALGORITHM ALGORITHM = ALGORITHM_FCFS;
 
 void changePCBState(PCB* process, PROCESS_STATE newState, int timeOfTransition)
 {
@@ -21,35 +34,79 @@ void changePCBState(PCB* process, PROCESS_STATE newState, int timeOfTransition)
 }
 
 
-void SimulatorInit(PCB** inputProcesses, int nb, SCHELDULER_MODE MODESET)
+void SimulatorSetProcesses(PCB** inputProcesses, int nb)
 {
-	// Init simulation
-	// queues initialisation
-	if(newQueue != NULL) PCBQDelete(newQueue);
-	newQueue = PCBQCreate(nb);
-	if(readyQueue != NULL) PCBQDelete(readyQueue);
-	readyQueue = PCBQCreate(nb);
-	if(terminatedQueue != NULL) PCBQDelete(terminatedQueue);
-	terminatedQueue = PCBQCreate(nb);
-
 	processes = inputProcesses;
-	MODE = MODESET;
 	nbProcesses =  nb;
+}
+
+void SimulatorSetMode(SCHELDULER_MODE MODESET)
+{
+	MODE = MODESET;
+}
+
+void SimulatorSetAlgorithm(SCHELDULER_ALGORITHM ALGO)
+{
+	ALGORITHM = ALGO;
+}
+
+// increments the timer and update the process counters
+void step(int* time)
+{
+	// check every PCB and update their values
+	for (int i = 0; i < nbProcesses; ++i)
+	{
+		PCB* p = processes[i];
+		switch(p->state)
+		{
+			case RUNNING:
+				p->totalCPUTimeUsed++;
+				p->remainingBeforeIORequestTime -= p->remainingBeforeIORequestTime < 0?0:1;
+				break;
+			case WAITING:
+				p->remainingIODuration--;
+				break;
+			case READY:
+				p->waitTime++;
+				break;
+			default:
+				break;
+		}
+	}
+	(*time)++;
+}
+
+int endOfSimulation(int* time)
+{
+	// all the process are not or the time limit has not been reached
+	return ((PCBQSize(terminatedQueue) == nbProcesses) || (*time >= SIMULATION_TIME_LIMIT));
+}
+
+PCB* pickNextProcess()
+{
+	switch(ALGORITHM)
+	{
+		case ALGORITHM_FCFS:
+		default: // ALGORITHM_FCFS is default
+			return PCBQPop(readyQueue);
+	}
 }
 
 void SimulatorRun()
 {
+	// queues initialisation
+	newQueue = PCBQCreate(nbProcesses);
+	readyQueue = PCBQCreate(nbProcesses);
+	terminatedQueue = PCBQCreate(nbProcesses);
+
 	int inputProcessIndex = 0;
 	int time = 0; // in ms
 	PCB* runningProcess = NULL;
 
-
+	printf("Starting Simulation of %d process%s in %s mode with %s algorithm...\n",nbProcesses,(nbProcesses>1?"es":""), modeToStr(MODE), algorithmToStr(ALGORITHM));
 	// simulation loop
-	printf("Starting Simulation...\n");
-	while((PCBQSize(terminatedQueue) != nbProcesses) && (time < SIMULATION_TIME_LIMIT)) // while all the process are not done
+	while(!endOfSimulation(&time)) // while the simulation is not done
 	{
-		//FCFS Schelduler no preemption
-
 		//is there a new process that should be created ?
 		if(inputProcessIndex < nbProcesses && processes[inputProcessIndex]->arrivalTime == time)
 		{
@@ -93,7 +150,7 @@ void SimulatorRun()
 			if(!PCBQisEmpty(readyQueue))
 			{
 				// we take the first one. FCFS
-				PCB* p = PCBQPop(readyQueue);
+				PCB* p = pickNextProcess(); // SCHELDULER JOB
 				/** READY -> RUNNING **/
 				changePCBState(p, RUNNING, time);
 				runningProcess = p;
@@ -126,38 +183,22 @@ void SimulatorRun()
 			}
 		}
 		
-
-		// check every PCB and update their values
-		for (int i = 0; i < nbProcesses; ++i)
-		{
-			PCB* p = processes[i];
-			switch(p->state)
-			{
-				case RUNNING:
-					p->totalCPUTimeUsed++;
-					p->remainingBeforeIORequestTime -= p->remainingBeforeIORequestTime < 0?0:1;
-					break;
-				case WAITING:
-					p->remainingIODuration--;
-					break;
-				case READY:
-					p->waitTime++;
-					break;
-				default:
-					break;
-			}
-		}
-		time++;
+		// if we reach this point, there was nothing more to do at this instant. We go to the next instant
+		step(&time);
 	}
-
-
-
 
 	if(time >= SIMULATION_TIME_LIMIT) printf("SIMULATION HAS REACHED TIME LIMIT OF %d ms.\n", SIMULATION_TIME_LIMIT);
 	printf("End of Simulation at %d ms.\n", time);
 
-
 	PCBQDelete(newQueue);
 	PCBQDelete(readyQueue);
 	PCBQDelete(terminatedQueue);
+}
+
+void SimulatorReset()
+{
+	for (int i = 0; i < nbProcesses; ++i)
+	{
+		PCBReset(processes[i]);
+	}
 }
