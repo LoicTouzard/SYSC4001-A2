@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "Simulator.h"
+#include "OutputFileManager.h"
 #include "PCB.h"
 
 char* modeToStr(SCHELDULER_MODE mode)
@@ -28,6 +29,7 @@ static SCHELDULER_ALGORITHM ALGORITHM = ALGORITHM_FCFS;
 
 void changePCBState(PCB* process, PROCESS_STATE newState, int timeOfTransition)
 {
+	OFMLogState(timeOfTransition, process, newState);
 	printf("Transition at %d ms.\tProcess %d changed state from %s to %s\n",
 		timeOfTransition, process->pid, stateToStr(process->state), stateToStr(newState));
 	process->state = newState;

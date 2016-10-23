@@ -1,5 +1,5 @@
 EXE=Simulator
-INT=InputFileManager.h PCB.h Simulator.h
+INT=InputFileManager.h PCB.h Simulator.h OutputFileManager.h
 
 INTERFACEPATH=src/
 SOURCEPATH=src/
