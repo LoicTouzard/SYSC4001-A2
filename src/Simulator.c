@@ -6,6 +6,7 @@
 #include "OutputFileManager.h"
 #include "PCB.h"
 #include "PCBQueue.h"
+#include "PCBHeap.h"
 
 char* modeToStr(SCHELDULER_MODE mode)
 {
@@ -16,17 +17,19 @@ char* modeToStr(SCHELDULER_MODE mode)
 
 char* algorithmToStr(SCHELDULER_ALGORITHM algorithm)
 {
-	return (algorithm==ALGORITHM_FCFS?"FCFS":"UNKNOWN"
-	);
+	return (algorithm==ALGORITHM_FCFS?"FCFS":
+		(algorithm==ALGORITHM_PRIORITY?"PRIORITY":"UNKNOWN"
+	));
 }
 
 static PCB** processes = NULL;
 static int nbProcesses = 0;
-static PCBQueue* newQueue = NULL;
-static PCBQueue* readyQueue = NULL;
-static PCBQueue* terminatedQueue = NULL;
-static SCHELDULER_MODE MODE = MODE_NONPREEMPTIVE;
-static SCHELDULER_ALGORITHM ALGORITHM = ALGORITHM_FCFS;
+static PCBQueue* newQueue = NULL;	// a queue containing the processes in NEW state
+static PCBQueue* readyQueue = NULL;	// a queue containing the processes in READY state. Used for ALGORITHM_FCFS
+static PCBHeap* readyHeap = NULL;	// a heap containing the processes in READY state. Used for ALGORITHM_PRIORITY
+static PCBQueue* terminatedQueue = NULL;	// a queue containing the processes in TERMINATED state
+static SCHELDULER_MODE MODE = MODE_NONPREEMPTIVE; // default
+static SCHELDULER_ALGORITHM ALGORITHM = ALGORITHM_FCFS; // default
 
 void changePCBState(PCB* process, PROCESS_STATE newState, int timeOfTransition)
 {
@@ -89,19 +92,73 @@ PCB* pickNextProcess()
 {
 	switch(ALGORITHM)
 	{
+		case ALGORITHM_PRIORITY:
+			return PCBHPop(readyHeap);
 		case ALGORITHM_FCFS:
-		default: // ALGORITHM_FCFS is default
+		default:
 			return PCBQPop(readyQueue);
+	}
+}
+
+// queues/heap initialisation
+void initStructures()
+{
+	newQueue = PCBQCreate(nbProcesses);
+	switch(ALGORITHM)
+	{
+		case ALGORITHM_PRIORITY:
+			readyHeap = PCBHCreate(nbProcesses);
+		case ALGORITHM_FCFS:
+		default:
+			readyQueue = PCBQCreate(nbProcesses);
+	}
+	terminatedQueue = PCBQCreate(nbProcesses);
+}
+
+// clean and delete all the data structures
+void deleteStructures()
+{
+	PCBQDelete(newQueue);
+	switch(ALGORITHM)
+	{
+		case ALGORITHM_PRIORITY:
+			PCBHDelete(readyHeap);
+		case ALGORITHM_FCFS:
+		default:
+			PCBQDelete(readyQueue);
+	}
+	PCBQDelete(terminatedQueue);
+}
+
+// insert a process in the ready queue/heap
+void insertREADYProcess(PCB* p)
+{
+	switch(ALGORITHM)
+	{
+		case ALGORITHM_PRIORITY:
+			PCBHInsert(readyHeap, p);
+		case ALGORITHM_FCFS:
+		default:
+			PCBQInsert(readyQueue, p);
+	}
+}
+
+// return 1 if there are no READY process waiting, else 0
+int noReadyProcess()
+{
+	switch(ALGORITHM)
+	{
+		case ALGORITHM_PRIORITY:
+			return PCBHisEmpty(readyHeap);
+		case ALGORITHM_FCFS:
+		default:
+			return PCBQisEmpty(readyQueue);
 	}
 }
 
 void SimulatorRun()
 {
-	// queues initialisation
-	newQueue = PCBQCreate(nbProcesses);
-	readyQueue = PCBQCreate(nbProcesses);
-	terminatedQueue = PCBQCreate(nbProcesses);
-
+	initStructures();
 	int inputProcessIndex = 0;
 	int time = 0; // in ms
 	PCB* runningProcess = NULL;
@@ -131,7 +188,7 @@ void SimulatorRun()
 				/** WAITING -> READY **/
 				changePCBState(p, READY, time);
 				p->remainingBeforeIORequestTime = p->IOFrequency;
-				PCBQInsert(readyQueue, p);
+				insertREADYProcess(p);
 			}
 		}
 		
@@ -143,14 +200,14 @@ void SimulatorRun()
 			PCB* p = PCBQPop(newQueue);
 			/** NEW -> READY **/
 			changePCBState(p, READY, time);
-			PCBQInsert(readyQueue, p);
+			insertREADYProcess(p);
 			continue;
 		}
 
 		// if nobody is RUNNING run the next one ready
 		if(runningProcess == NULL)
 		{
-			if(!PCBQisEmpty(readyQueue))
+			if(!noReadyProcess())
 			{
 				// we take the first one. FCFS
 				PCB* p = pickNextProcess(); // SCHELDULER JOB
@@ -193,9 +250,7 @@ void SimulatorRun()
 	if(time >= SIMULATION_TIME_LIMIT) printf("SIMULATION HAS REACHED TIME LIMIT OF %d ms.\n", SIMULATION_TIME_LIMIT);
 	printf("End of Simulation at %d ms.\n", time);
 
-	PCBQDelete(newQueue);
-	PCBQDelete(readyQueue);
-	PCBQDelete(terminatedQueue);
+	deleteStructures();
 }
 
 void SimulatorReset()

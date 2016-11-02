@@ -3,7 +3,7 @@
 
 #include "PCB.h"
 
-#define SIMULATION_TIME_LIMIT 1000 // 1000 seconds, to prevent infinite loop
+#define SIMULATION_TIME_LIMIT 1000 // 1000 seconds, to prevent infinite loop, adapt if needed
 
 // enum for the different schelduler mode
 typedef enum SCHELDULER_MODE
@@ -13,7 +13,7 @@ typedef enum SCHELDULER_MODE
 
 typedef enum SCHELDULER_ALGORITHM
 {
-	ALGORITHM_FCFS
+	ALGORITHM_FCFS, ALGORITHM_PRIORITY
 } SCHELDULER_ALGORITHM;
 
 char* modeToStr(SCHELDULER_MODE mode);
