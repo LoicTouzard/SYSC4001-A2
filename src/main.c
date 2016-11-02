@@ -40,11 +40,43 @@ int main(int argc, char* argv[])
 	if(OFMOpen(argv[2]) == -1) return EXIT_FAILURE;
 	
 	// Simulation goes here
-
+	/*
 	SimulatorSetProcesses(processes, nbProcesses);
 	SimulatorSetMode(MODE_NONPREEMPTIVE);
 	SimulatorSetAlgorithm(ALGORITHM_FCFS);
 	SimulatorRun();
+	*/
+
+
+	printf("creation\n");
+	PCBHeap *h = PCBHCreate(nbProcesses);
+	printf("size : %d\n", PCBHSize(h));
+	printf("empty : %d\n",PCBHisEmpty(h));
+	printf("full : %d\n",PCBHisFull(h));
+	for (int i = 0; i < nbProcesses; ++i)
+	{
+		printf("\n");
+		printf("insertion\n");
+		PCBHInsert(h, processes[i]);
+		printf("size : %d\n", PCBHSize(h));
+		printf("empty : %d\n",PCBHisEmpty(h));
+		printf("full : %d\n",PCBHisFull(h));
+	}
+
+	printf("\n");
+	printf("\n");
+	printf("\n");
+    for (int i = 0; i < nbProcesses; i++) {
+    	
+		printf("front : %d\n",PCBHFront(h)->pid);
+    	PCB* p = PCBHPop(h);
+        printf("pop %d : %d\n", p->priority, p->pid);
+		printf("size : %d\n", PCBHSize(h));
+		printf("\n");
+    }
+	printf("size : %d\n", PCBHSize(h));
+	PCBHDelete(h);
+
 
 
 	if(OFMClose() == -1) return EXIT_FAILURE;

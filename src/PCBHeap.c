@@ -58,7 +58,7 @@ void PCBHInsert(PCBHeap* heap, PCB* data)
 {
     int i = heap->len + 1;// insertion index start at the end
     int j = i / 2; // 'parent' index
-    while (i > 1 && heap->PCBs[j]->priority > data->priority) {// climb the flatten tree
+    while (i > 1 && heap->PCBs[j]->priority < data->priority) {// climb the flatten tree
         heap->PCBs[i] = heap->PCBs[j];
         i = j;
         j = j / 2; // go to parent
@@ -82,10 +82,10 @@ PCB* PCBHPop(PCBHeap* heap)
     while (1) {
         k = i;
         j = 2 * i;
-        if (j <= heap->len && heap->PCBs[j]->priority < heap->PCBs[k]->priority) {
+        if (j <= heap->len && heap->PCBs[j]->priority > heap->PCBs[k]->priority) {
             k = j;//switch with son
         }
-        if (j + 1 <= heap->len && heap->PCBs[j + 1]->priority < heap->PCBs[k]->priority) {
+        if (j + 1 <= heap->len && heap->PCBs[j + 1]->priority > heap->PCBs[k]->priority) {
             k = j + 1;//switch with neighbour
         }
         if (k == i) {
