@@ -1,5 +1,5 @@
 EXE=Simulator
-INT=InputFileManager.h PCB.h Simulator.h OutputFileManager.h
+INT=InputFileManager.h PCB.h Simulator.h OutputFileManager.h PCBQueue.h PCBHeap.h
 
 INTERFACEPATH=src/
 SOURCEPATH=src/
@@ -18,6 +18,8 @@ MainOBJ=$(MainSRC:.c=.o)
 ECHO=@echo
 
 CLEAN=clean
+RUN=run
+RUNTESTS=runtests
 RM=rm
 RMFlags=-f
 
@@ -44,9 +46,15 @@ $(SOURCEPATH)$(MainOBJ): $(SOURCEPATH)$(MainSRC) $(INT)
 
 
 # ***** RUN ***** #
-run: $(EXE)
+$(RUN): $(EXE)
 	$(ECHO) "Program execution"
 	$(EXEPATH)$(EXE) $(DATAPATH)input.txt $(DATAPATH)output.txt
+
+# ***** TEST ***** #
+$(RUNTESTS): $(EXE)
+	$(ECHO) "Program execution"
+	$(EXEPATH)$(EXE) $(DATAPATH)input1c.txt $(DATAPATH)output1c.txt
+	$(EXEPATH)$(EXE) $(DATAPATH)input1d.txt $(DATAPATH)output1d.txt
 
 # ***** CLEAN ***** #
 

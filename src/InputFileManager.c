@@ -41,6 +41,7 @@ PCB* lineToProcess(char* line)
 	const char* totalCPUTime = strtok(NULL, ";");
 	const char* IOFrequency = strtok(NULL, ";");
 	const char* IODuration = strtok(NULL, ";");
+	const char* priority = strtok(NULL, ";");
 
 	if(pid == NULL || arrivalTime == NULL || totalCPUTime == NULL ||IOFrequency == NULL || IODuration == NULL)
 	{
@@ -48,7 +49,12 @@ PCB* lineToProcess(char* line)
 		return NULL;
 	}
 	// dynamically create the process in memory
-	PCB* process = PCBCreate(atoi(pid), atoi(arrivalTime), atoi(totalCPUTime), atoi(IOFrequency), atoi(IODuration));
+	PCB* process = PCBCreate(atoi(pid),
+		atoi(arrivalTime),
+		atoi(totalCPUTime),
+		atoi(IOFrequency),
+		atoi(IODuration),
+		((priority == NULL) ? 0 : atoi(priority)));// priority is optionnal, when not found is set to 0
 	
 	return process;
 }

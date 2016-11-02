@@ -5,6 +5,7 @@
 #include "Simulator.h"
 #include "OutputFileManager.h"
 #include "PCB.h"
+#include "PCBQueue.h"
 
 char* modeToStr(SCHELDULER_MODE mode)
 {

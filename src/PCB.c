@@ -21,7 +21,8 @@ PCB* PCBCreate(int pid,
 	int arrivalTime,
 	int totalCPUTime,
 	int IOFrequency,
-	int IODuration)
+	int IODuration,
+	int priority)
 {
 	// allocate a new PCB
 	PCB* pcb = (PCB*)malloc(sizeof(PCB));
@@ -36,6 +37,7 @@ PCB* PCBCreate(int pid,
 	pcb->remainingBeforeIORequestTime = (IOFrequency <= 0)?-1:IOFrequency;// IOFrequency to 0 results in no IO interruption
 	pcb->remainingIODuration = 0;
 	pcb->waitTime = 0;
+	pcb->priority = (priority < 0)?0:priority;
 	pcb->state = UNDEFINED;
 	return pcb;
 }
@@ -59,85 +61,11 @@ void PCBDelete(PCB* pcb)
 void PCBPrint(PCB* pcb)
 {
 	// only info from input (was for parsing debug)
-	printf("Process %d : arrivalTime %d | totalCPUTime %d | IOFrequency %d | IODuration %d | state %s\n",
-		pcb->pid, pcb->arrivalTime, pcb->totalCPUTime, pcb->IOFrequency, pcb->IODuration, stateToStr(pcb->state));
+	printf("Process %d : arrivalTime %d | totalCPUTime %d | IOFrequency %d | IODuration %d | priority %d | state %s\n",
+		pcb->pid, pcb->arrivalTime, pcb->totalCPUTime, pcb->IOFrequency, pcb->IODuration, pcb->priority, stateToStr(pcb->state));
 }
 
 int PCBCmp(const void * a, const void * b)
 {
    return ( (*(PCB**)a)->arrivalTime - (*(PCB**)b)->arrivalTime );
-}
-
-
-// PCB QUEUE IMPLEMENTATION
-
-PCBQueue* PCBQCreate(int max)
-{
-	PCBQueue* pcbq = (PCBQueue*)malloc(sizeof(PCBQueue));
-	if(max <= 0)
-	{
-		max = 0;
-	}
-	else
-	{
-		pcbq->PCBs = (PCB**)malloc(max * sizeof(PCB*));
-	}
-	pcbq->MAX = max;
-	pcbq->front = 0;
-	pcbq->rear = -1;
-	pcbq->itemCount = 0;
-	return pcbq;
-}
-
-void PCBQDelete(PCBQueue* queue)
-{
-	// free the inner array before freeing the queue
-	if(queue->MAX != 0) free(queue->PCBs);
-	free(queue);
-}
-
-PCB* PCBQFront(const PCBQueue* queue)
-{
-   return queue->PCBs[queue->front];
-}
-
-int PCBQisEmpty(const PCBQueue* queue)
-{
-   return queue->itemCount == 0;
-}
-
-int PCBQisFull(const PCBQueue* queue)
-{
-   return queue->itemCount == queue->MAX;
-}
-
-int PCBQSize(const PCBQueue* queue)
-{
-	return queue->itemCount;
-}  
-
-void PCBQInsert(PCBQueue* queue, PCB* data)
-{
-	if(!PCBQisFull(queue))
-	{	
-		if(queue->rear == queue->MAX-1) // index cycle if at the end
-		{
-			queue->rear = -1;            
-		}
-		queue->PCBs[++(queue->rear)] = data; // insertion
-		queue->itemCount++;
-	}
-}
-
-PCB* PCBQPop(PCBQueue* queue)
-{
-	PCB* data = queue->PCBs[queue->front++];
-
-	if(queue->front == queue->MAX) // index cycle if at the end
-	{
-		queue->front = 0;
-	}
-
-	queue->itemCount--;
-	return data;  
 }

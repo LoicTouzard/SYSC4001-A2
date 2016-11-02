@@ -7,6 +7,8 @@
 #include "PCB.h"
 #include "Simulator.h"
 
+#include "PCBHeap.h"
+
 
 
 void printAllProcesses(PCB** processes, int nbProcesses)
@@ -35,14 +37,15 @@ int main(int argc, char* argv[])
 
 	printAllProcesses(processes, nbProcesses);
 
-
 	if(OFMOpen(argv[2]) == -1) return EXIT_FAILURE;
 	
 	// Simulation goes here
+
 	SimulatorSetProcesses(processes, nbProcesses);
 	SimulatorSetMode(MODE_NONPREEMPTIVE);
 	SimulatorSetAlgorithm(ALGORITHM_FCFS);
 	SimulatorRun();
+
 
 	if(OFMClose() == -1) return EXIT_FAILURE;
 
