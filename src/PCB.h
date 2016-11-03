@@ -46,7 +46,12 @@ void PCBDelete(PCB* pcb);
 void PCBPrint(PCB* pcb);
 
 // Comparaison function between two PCB for qsort, it uses the arrivalTime discriminator
-int PCBCmp(const void * a, const void * b);
+int PCBCompareArrivalTime(const void * a, const void * b);
 
+// Comparaison function between two PCB for PCBHeap sorting, it uses the priority discriminator
+int PCBComparePriority(const PCB* a, const PCB* b);
+
+// Comparaison function between two PCB for PCBHeap sorting, it uses the totalCPUTime discriminator
+int PCBCompareTotalCPUTime(const PCB* a, const PCB* b);
 
 #endif // PCB_H

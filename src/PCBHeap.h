@@ -5,17 +5,21 @@
 
 /** PCB HEAP (PRIORITY QUEUE) DECLARATION **/
 
+
+// typedef for comparison function
+typedef int (*PCBComparator)(const PCB*, const PCB*);
+
 // Heap data structure for PCB*
 // Use the methods to manipulate the queue, DO NOT USE the struct directly
 typedef struct PCBHeap{
 	PCB** PCBs; 	// array of PCB, used as queue
     int len;
     int MAX;
+    PCBComparator cprFunc; // function to compare 2 PCB and order the heap
 } PCBHeap;
 
-
 // Create dynamically and return a PCBHeap having the parameter max as capacity
-PCBHeap* PCBHCreate(int max);
+PCBHeap* PCBHCreate(int max, PCBComparator cprFunc);
 
 // Free a heap
 // NOTE : Doens't free the content of it just the structure

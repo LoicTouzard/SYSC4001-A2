@@ -65,7 +65,17 @@ void PCBPrint(PCB* pcb)
 		pcb->pid, pcb->arrivalTime, pcb->totalCPUTime, pcb->IOFrequency, pcb->IODuration, pcb->priority, stateToStr(pcb->state));
 }
 
-int PCBCmp(const void * a, const void * b)
+int PCBCompareArrivalTime(const void * a, const void * b)
 {
-   return ( (*(PCB**)a)->arrivalTime - (*(PCB**)b)->arrivalTime );
+	return ( (*(PCB**)a)->arrivalTime - (*(PCB**)b)->arrivalTime );// a - b, increasing sort
+}
+
+int PCBComparePriority(const PCB* a, const PCB* b)
+{
+	return ( a->priority - b->priority );	// a - b, increasing sort
+}
+
+int PCBCompareTotalCPUTime(const PCB* a, const PCB* b)
+{
+	return ( b->totalCPUTime - a->totalCPUTime ); // b - a, decreasing sort
 }

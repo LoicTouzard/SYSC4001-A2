@@ -1,17 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
  
-typedef struct {
-    int priority;
-    char *data;
-} node_t;
-
 #include "PCB.h"
 #include "PCBHeap.h"
 
+
 // PCB HEAP (PRIORITY QUEUE) IMPLEMENTATION
 
-PCBHeap* PCBHCreate(int max)
+PCBHeap* PCBHCreate(int max, PCBComparator cprFunc)
 {
     PCBHeap* pcbh = (PCBHeap*)malloc(sizeof(PCBHeap));
     if(max <= 0)
@@ -24,6 +20,7 @@ PCBHeap* PCBHCreate(int max)
     }
     pcbh->MAX = max;
     pcbh->len = 0;
+    pcbh->cprFunc = cprFunc;
     return pcbh;
 }
 
@@ -58,7 +55,7 @@ void PCBHInsert(PCBHeap* heap, PCB* data)
 {
     int i = heap->len + 1;// insertion index start at the end
     int j = i / 2; // 'parent' index
-    while (i > 1 && heap->PCBs[j]->priority < data->priority) {// climb the flatten tree
+    while (i > 1 && heap->cprFunc(heap->PCBs[j], data) < 0) {// climb the flatten tree
         heap->PCBs[i] = heap->PCBs[j];
         i = j;
         j = j / 2; // go to parent
@@ -82,10 +79,10 @@ PCB* PCBHPop(PCBHeap* heap)
     while (1) {
         k = i;
         j = 2 * i;
-        if (j <= heap->len && heap->PCBs[j]->priority > heap->PCBs[k]->priority) {
+        if (j <= heap->len && heap->cprFunc(heap->PCBs[j], heap->PCBs[k]) > 0) {
             k = j;//switch with son
         }
-        if (j + 1 <= heap->len && heap->PCBs[j + 1]->priority > heap->PCBs[k]->priority) {
+        if (j + 1 <= heap->len && heap->cprFunc(heap->PCBs[j + 1], heap->PCBs[k]) > 0) {
             k = j + 1;//switch with neighbour
         }
         if (k == i) {

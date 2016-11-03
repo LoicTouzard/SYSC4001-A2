@@ -18,8 +18,9 @@ char* modeToStr(SCHELDULER_MODE mode)
 char* algorithmToStr(SCHELDULER_ALGORITHM algorithm)
 {
 	return (algorithm==ALGORITHM_FCFS?"FCFS":
-		(algorithm==ALGORITHM_PRIORITY?"PRIORITY":"UNKNOWN"
-	));
+		(algorithm==ALGORITHM_PRIORITY?"PRIORITY":
+			(algorithm==ALGORITHM_SJF?"SJF":"UNKNOWN"
+	)));
 }
 
 static PCB** processes = NULL;
@@ -30,6 +31,7 @@ static PCBHeap* readyHeap = NULL;	// a heap containing the processes in READY st
 static PCBQueue* terminatedQueue = NULL;	// a queue containing the processes in TERMINATED state
 static SCHELDULER_MODE MODE = MODE_NONPREEMPTIVE; // default
 static SCHELDULER_ALGORITHM ALGORITHM = ALGORITHM_FCFS; // default
+static int VERBOOSE = 0; // 0 Not verboose, 1 verboose
 
 void changePCBState(PCB* process, PROCESS_STATE newState, int timeOfTransition)
 {
@@ -44,6 +46,9 @@ void SimulatorSetProcesses(PCB** inputProcesses, int nb)
 {
 	processes = inputProcesses;
 	nbProcesses =  nb;
+	
+	// Sort PCBs by Arrival Time
+	qsort(processes, nbProcesses, sizeof(PCB*), PCBCompareArrivalTime);
 }
 
 void SimulatorSetMode(SCHELDULER_MODE MODESET)
@@ -54,6 +59,11 @@ void SimulatorSetMode(SCHELDULER_MODE MODESET)
 void SimulatorSetAlgorithm(SCHELDULER_ALGORITHM ALGO)
 {
 	ALGORITHM = ALGO;
+}
+
+void SimulatorSetVerbose(int level)
+{
+	VERBOOSE = level;
 }
 
 // increments the timer and update the process counters
@@ -82,17 +92,12 @@ void step(int* time)
 	(*time)++;
 }
 
-int endOfSimulation(int* time)
-{
-	// all the process are not or the time limit has not been reached
-	return ((PCBQSize(terminatedQueue) == nbProcesses) || (*time >= SIMULATION_TIME_LIMIT));
-}
-
 PCB* pickNextProcess()
 {
 	switch(ALGORITHM)
 	{
 		case ALGORITHM_PRIORITY:
+		case ALGORITHM_SJF:
 			return PCBHPop(readyHeap);
 		case ALGORITHM_FCFS:
 		default:
@@ -107,7 +112,9 @@ void initStructures()
 	switch(ALGORITHM)
 	{
 		case ALGORITHM_PRIORITY:
-			readyHeap = PCBHCreate(nbProcesses);
+			readyHeap = PCBHCreate(nbProcesses, &PCBComparePriority); // heap based on priority
+		case ALGORITHM_SJF:
+			readyHeap = PCBHCreate(nbProcesses, &PCBCompareTotalCPUTime); // heap based on TotalCPUTime
 		case ALGORITHM_FCFS:
 		default:
 			readyQueue = PCBQCreate(nbProcesses);
@@ -122,6 +129,7 @@ void deleteStructures()
 	switch(ALGORITHM)
 	{
 		case ALGORITHM_PRIORITY:
+		case ALGORITHM_SJF:
 			PCBHDelete(readyHeap);
 		case ALGORITHM_FCFS:
 		default:
@@ -136,6 +144,7 @@ void insertREADYProcess(PCB* p)
 	switch(ALGORITHM)
 	{
 		case ALGORITHM_PRIORITY:
+		case ALGORITHM_SJF:
 			PCBHInsert(readyHeap, p);
 		case ALGORITHM_FCFS:
 		default:
@@ -149,11 +158,18 @@ int noReadyProcess()
 	switch(ALGORITHM)
 	{
 		case ALGORITHM_PRIORITY:
+		case ALGORITHM_SJF:
 			return PCBHisEmpty(readyHeap);
 		case ALGORITHM_FCFS:
 		default:
 			return PCBQisEmpty(readyQueue);
 	}
+}
+
+int endOfSimulation(int* time)
+{
+	// all the process are not or the time limit has not been reached
+	return ((PCBQSize(terminatedQueue) == nbProcesses) || (*time >= SIMULATION_TIME_LIMIT));
 }
 
 void SimulatorRun()
@@ -164,7 +180,7 @@ void SimulatorRun()
 	PCB* runningProcess = NULL;
 
 	printf("Starting Simulation of %d process%s in %s mode with %s algorithm...\n",nbProcesses,(nbProcesses>1?"es":""), modeToStr(MODE), algorithmToStr(ALGORITHM));
-	// simulation loop
+	// simulation loop  PROCESS LIFECYCLE IMPLEMENTATION
 	while(!endOfSimulation(&time)) // while the simulation is not done
 	{
 		//is there a new process that should be created ?
@@ -193,7 +209,7 @@ void SimulatorRun()
 		}
 		
 
-		// If there is NEW process admit them
+		// If there is NEW process admit them, long-term schelduler job
 		if(!PCBQisEmpty(newQueue))
 		{
 			// state go to READY, add it to readyQueue, remove from newQueue
@@ -203,6 +219,7 @@ void SimulatorRun()
 			insertREADYProcess(p);
 			continue;
 		}
+
 
 		// if nobody is RUNNING run the next one ready
 		if(runningProcess == NULL)
