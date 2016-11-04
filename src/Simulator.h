@@ -3,18 +3,25 @@
 
 #include "PCB.h"
 
-#define SIMULATION_TIME_LIMIT 1000 // 1000 seconds, to prevent infinite loop, adapt if needed
+#define SIMULATION_TIME_LIMIT 1000000 // 1000000 miliseconds, to prevent infinite loop, adapt if needed
 
 // enum for the different schelduler mode
 typedef enum SCHELDULER_MODE
 {
-	MODE_PREEMPTIVE, MODE_NONPREEMPTIVE
+	MODE_PREEMPTIVE, MODE_NONPREEMPTIVE		// PREEMPTIVE Mode is not implemented yet
 } SCHELDULER_MODE;
 
+// enum for the different schelduler algorithms
 typedef enum SCHELDULER_ALGORITHM
 {
 	ALGORITHM_FCFS, ALGORITHM_PRIORITY, ALGORITHM_SJF
 } SCHELDULER_ALGORITHM;
+
+// enum for the different verbose level (output)
+typedef enum VERBOSE_LEVEL
+{
+	NO_OUTPUT, TRACE, GANT
+} VERBOSE_LEVEL;
 
 char* modeToStr(SCHELDULER_MODE mode);
 
@@ -27,9 +34,11 @@ void SimulatorSetMode(SCHELDULER_MODE MODES);
 
 void SimulatorSetAlgorithm(SCHELDULER_ALGORITHM ALGO);
 
-void SimulatorSetVerbose(int level);
+void SimulatorSetVerbose(VERBOSE_LEVEL level);
 
 void SimulatorRun();
+
+void SimulatorPrintStats();
 
 void SimulatorReset();
 

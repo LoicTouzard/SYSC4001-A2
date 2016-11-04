@@ -36,14 +36,15 @@ int main(int argc, char* argv[])
 	
 
 	/* Simulation goes here */
-	
+	SimulatorSetVerbose(TRACE);
 	SimulatorSetProcesses(processes, nbProcesses);
 	SimulatorSetMode(MODE_NONPREEMPTIVE);
+
 	SimulatorSetAlgorithm(ALGORITHM_SJF);
-	//SimulatorSetAlgorithm(ALGORITHM_PRIORITY);
-	//SimulatorSetAlgorithm(ALGORITHM_FCFS);
 	SimulatorRun();// run the simulation until its end
-	
+	SimulatorPrintStats();
+
+
 	/* end of simulation */
 
 

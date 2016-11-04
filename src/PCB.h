@@ -9,6 +9,7 @@ typedef enum PROCESS_STATE
 	UNDEFINED, NEW, READY, RUNNING, WAITING, TERMINATED
 } PROCESS_STATE;
 
+
 // convert a PROCESS_STATE value into it's name as c-string
 char* stateToStr(PROCESS_STATE);
 
@@ -18,7 +19,7 @@ typedef struct PCB{
 	int arrivalTime;					// arrival time in system, from input
 	int totalCPUTime;					// total CPU Time required for the task, from input
 	int totalCPUTimeUsed;				// total CPU time used already
-	int remainingCPUTime;				// remaining CPU Time before preemption
+	int remainingCPUTime;				// remaining CPU Time before preemption // unused at the moment
 	int IOFrequency;					// IO frequency, from input
 	int IODuration;						// IO duration, from input
 	int remainingBeforeIORequestTime;	// Remaining time before the next IO request
