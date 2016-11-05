@@ -14,11 +14,18 @@ void printAllProcesses(PCB** processes, int nbProcesses)
 	for (int i = 0; i < nbProcesses; ++i) PCBPrint(processes[i]);
 }
 
+void printHelp()
+{
+	printf("Use : ./Simulator <input_file> <output_file> <ALGORITHM> <VERBOSE>\n");
+	printf("\t<ALGORITHM> can be 'FCFS', 'PRIORITY', 'SJF'.\n");
+	printf("\t<VERBOSE>   (optional) can be 'TRACE', 'GANTT'. Default gives none.\n");
+}
+
 int main(int argc, char* argv[])
 {
-	if(argc != 3)
+	if(argc < 4)
 	{
-		printf("Use : ./Simulator <input_file> <output_file>\n");
+		printHelp();
 		return EXIT_FAILURE;
 	}
 
@@ -36,11 +43,37 @@ int main(int argc, char* argv[])
 	
 
 	/* Simulation goes here */
-	SimulatorSetVerbose(TRACE);
+
 	SimulatorSetProcesses(processes, nbProcesses);
 	SimulatorSetMode(MODE_NONPREEMPTIVE);
 
-	SimulatorSetAlgorithm(ALGORITHM_SJF);
+	// ALGORITHM
+	if(strcmp(argv[3], "SJF") == 0)
+	{
+		SimulatorSetAlgorithm(ALGORITHM_SJF);
+	}
+	else if(strcmp(argv[3], "PRIORITY") == 0)
+	{
+		SimulatorSetAlgorithm(ALGORITHM_PRIORITY);
+	}
+	else
+	{
+		SimulatorSetAlgorithm(ALGORITHM_FCFS);
+	}
+
+	// VERBOSE
+	if(argc > 4)
+	{
+		if(strcmp(argv[4], "TRACE") == 0)
+		{
+			SimulatorSetVerbose(TRACE);
+		}
+		else if(strcmp(argv[4], "GANTT") == 0)
+		{
+			SimulatorSetVerbose(GANTT);
+		}
+	}
+
 	SimulatorRun();// run the simulation until its end
 	SimulatorPrintStats();
 

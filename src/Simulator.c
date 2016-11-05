@@ -17,7 +17,7 @@ static PCBHeap* readyHeap = NULL;	// a heap containing the processes in READY st
 static PCBQueue* terminatedQueue = NULL;	// a queue containing the processes in TERMINATED state
 static SCHELDULER_MODE MODE = MODE_NONPREEMPTIVE; // default
 static SCHELDULER_ALGORITHM ALGORITHM = ALGORITHM_FCFS; // default
-static VERBOSE_LEVEL VERBOSE = TRACE; // default
+static VERBOSE_LEVEL VERBOSE = NO_OUTPUT; // default
 static struct SimulatorStatistic
 {
 	double throughput;
@@ -125,6 +125,7 @@ PCB* pickNextProcess()
 		case ALGORITHM_PRIORITY:
 		case ALGORITHM_SJF:
 			return PCBHPop(readyHeap);
+			break;
 		case ALGORITHM_FCFS:
 		default:
 			return PCBQPop(readyQueue);
@@ -139,8 +140,10 @@ void initStructures()
 	{
 		case ALGORITHM_PRIORITY:
 			readyHeap = PCBHCreate(nbProcesses, &PCBComparePriority); // heap based on priority
+			break;
 		case ALGORITHM_SJF:
 			readyHeap = PCBHCreate(nbProcesses, &PCBCompareTotalCPUTime); // heap based on TotalCPUTime
+			break;
 		case ALGORITHM_FCFS:
 		default:
 			readyQueue = PCBQCreate(nbProcesses);
@@ -157,9 +160,11 @@ void deleteStructures()
 		case ALGORITHM_PRIORITY:
 		case ALGORITHM_SJF:
 			PCBHDelete(readyHeap);
+			break;
 		case ALGORITHM_FCFS:
 		default:
 			PCBQDelete(readyQueue);
+			break;
 	}
 	PCBQDelete(terminatedQueue);
 }
@@ -172,9 +177,11 @@ void insertREADYProcess(PCB* p)
 		case ALGORITHM_PRIORITY:
 		case ALGORITHM_SJF:
 			PCBHInsert(readyHeap, p);
+			break;
 		case ALGORITHM_FCFS:
 		default:
 			PCBQInsert(readyQueue, p);
+			break;
 	}
 }
 
@@ -186,9 +193,11 @@ int noReadyProcess()
 		case ALGORITHM_PRIORITY:
 		case ALGORITHM_SJF:
 			return PCBHisEmpty(readyHeap);
+			break;
 		case ALGORITHM_FCFS:
 		default:
 			return PCBQisEmpty(readyQueue);
+			break;
 	}
 }
 
@@ -297,14 +306,14 @@ void SimulatorRun()
 		
 
 		// if we reach this point, there was nothing more to do at this instant. We go to the next instant
-		if(VERBOSE == GANT){
+		if(VERBOSE == GANTT){
 			if(time > 0) printf("| ");
-			if(runningProcess == NULL) printf("    ");
-			else printf("P%2d ",runningProcess->pid);
+			if(runningProcess == NULL) printf("   ");
+			else printf("P%d ",runningProcess->pid);
 		}
 		step(&time);
 	}
-	if(VERBOSE == GANT) printf("\n");
+	if(VERBOSE == GANTT) printf("\n");
 
 	if(time >= SIMULATION_TIME_LIMIT) printf("SIMULATION HAS REACHED TIME LIMIT OF %d ms.\n", SIMULATION_TIME_LIMIT);
 	printf("End of Simulation at %d ms.\n", time);
@@ -326,6 +335,7 @@ void SimulatorPrintStats()
 	printf("Average Waiting Time : %.2f ms\n", globalStatistics.waitTime);
 	printf("Average Response Time : %.2f ms\n", globalStatistics.responseTime);
 	printf("CPU Utilization : %.2f %%\n", globalStatistics.CPUUtilization*100);
+	printf("\n");
 }
 
 void SimulatorReset()

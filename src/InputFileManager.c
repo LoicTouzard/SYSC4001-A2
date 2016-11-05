@@ -69,16 +69,19 @@ int IFMReadProcesses(PCB*** processes)
 
     while (fgets(line, 128, inputFile)) // while we can read a new line
     {
-        char* tmp = strdup(line); // Note : strdup duplicate by allocating memory
-        PCB* process = lineToProcess(tmp); // try to allocate a process from this line
+        char* tmp = (char*)strdup(line); // Note : strdup duplicate by allocating memory
+       	if(tmp[0] != '#') // escape comment line
+       	{
+	        PCB* process = lineToProcess(tmp); // try to allocate a process from this line
 
-        if(process != NULL)
-        {
-        	// add this new process to array, reallocating to adapt the size
-        	size++;
-    		*processes = (PCB**)realloc(*processes, size * sizeof(PCB*));
-        	(*processes)[size-1] = process;
-        }
+	        if(process != NULL)
+	        {
+	        	// add this new process to array, reallocating to adapt the size
+	        	size++;
+	    		*processes = (PCB**)realloc(*processes, size * sizeof(PCB*));
+	        	(*processes)[size-1] = process;
+	        }
+	    }
         free(tmp);
     }
 

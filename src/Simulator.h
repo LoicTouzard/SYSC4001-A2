@@ -20,7 +20,7 @@ typedef enum SCHELDULER_ALGORITHM
 // enum for the different verbose level (output)
 typedef enum VERBOSE_LEVEL
 {
-	NO_OUTPUT, TRACE, GANT
+	NO_OUTPUT, TRACE, GANTT
 } VERBOSE_LEVEL;
 
 char* modeToStr(SCHELDULER_MODE mode);
